@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.UsersDao">
+    <!--  插入一条用户信息，插入信息为：用户id、密码  -->
+    <insert id="insertUser">
+        insert into users (uid, password) values(#{uid},#{password});
+    </insert>
+    <!--  根据用户id查询用户id——即查询用户id是否存在  -->
+    <select id="selectUid" resultType="java.lang.Integer">
+        select uid from users where uid=#{uid};
+    </select>
+    <!--  根据用户id查询密码  -->
+    <select id="selectPassword" resultType="java.lang.String">
+        select password from users where uid=#{uid};
+    </select>
+    <!--  根据用户id查询学生用户信息  -->
+    <select id="selectStu" resultType="User">
+        select
+        users.uid,
+        students.name,
+        users.password,
+        students.gender,
+        students.dept,
+        students.grade,
+        users.status
+        from students, users
+        where students.sid=users.uid
+        and users.uid=#{uid};
+    </select>
+    <!--  根据用户id查询管理员用户信息  -->
+    <select id="selectAdmin" resultType="User">
+        select
+        uid,
+        password,
+        status
+        from users
+        where uid=#{uid} and status="admin";
+    </select>
+    <!--  根据用户id更新密码  -->
+    <update id="updatePassword">
+        update users set password=#{password} where uid=#{uid};
+    </update>
+    <!--  冻结超期用户  -->
+    <update id="updateFrozen">
+        update users set users.status='frozen' where users.uid in (select distinct records.uid from records where records.deadline &lt; now());
+    </update>
+</mapper>

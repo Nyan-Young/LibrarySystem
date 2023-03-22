@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.BookInfoDao">
+    <!--  根据bcode列表批量更新书籍available字段值  -->
+    <update id="updateBooks">
+        update book_info set available=#{available} where bcode in
+        <foreach collection="bcodes" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <resultMap id="books" type="com.domain.Book"></resultMap>
+    <resultMap id="total" type="java.lang.Integer"></resultMap>
+    <!--  分页查询书籍信息及信息总条数  -->
+    <select id="selectBooks" resultMap="books, total">
+        select SQL_CALC_FOUND_ROWS
+        book_info.bcode,
+        book_info.bookname,
+        book_info.author,
+        book_info.available,
+        book_info.introduction,
+        count(books.bid) - count(records.bid) as rest,
+        count(books.bid) as total
+        from book_info left join books
+        on book_info.bcode=books.bcode
+        left join records on books.bid=records.bid
+        where records.return_time is null
+        group by books.bcode
+        limit #{currPage}, #{pageSize};
+        select FOUND_ROWS() as total;
+    </select>
+    <!--  根据书名分页模糊查询书籍信息及信息总条数  -->
+    <select id="selectBooksByName" resultMap="books, total">
+        select SQL_CALC_FOUND_ROWS
+        book_info.bcode,
+        book_info.bookname,
+        book_info.author,
+        book_info.available,
+        book_info.introduction,
+        count(books.bid) - count(records.bid) as rest,
+        count(books.bid) as total
+        from book_info left join books
+        on book_info.bcode=books.bcode
+        left join records on books.bid=records.bid
+        where records.return_time is null
+        and book_info.bookname like #{bookname}
+        group by books.bcode
+        limit #{currPage}, #{pageSize};
+        select FOUND_ROWS() as total;
+    </select>
+    <!--  根据作者分页模糊查询书籍信息及信息总条数  -->
+    <select id="selectBooksByAuthor" resultMap="books, total">
+        select SQL_CALC_FOUND_ROWS
+        book_info.bcode,
+        book_info.bookname,
+        book_info.author,
+        book_info.available,
+        book_info.introduction,
+        count(books.bid) - count(records.bid) as rest,
+        count(books.bid) as total
+        from book_info left join books
+        on book_info.bcode=books.bcode
+        left join records on books.bid=records.bid
+        where records.return_time is null
+        and book_info.author like #{author}
+        group by books.bcode
+        limit #{currPage}, #{pageSize};
+        select FOUND_ROWS() as total;
+    </select>
+    <!--  根据是否上架分页查询书籍信息及信息总条数  -->
+    <select id="selectBooksByAvailable" resultMap="books, total">
+        select SQL_CALC_FOUND_ROWS
+        book_info.bcode,
+        book_info.bookname,
+        book_info.author,
+        book_info.available,
+        book_info.introduction,
+        count(books.bid) - count(records.bid) as rest,
+        count(books.bid) as total
+        from book_info left join books
+        on book_info.bcode=books.bcode
+        left join records on books.bid=records.bid
+        where records.return_time is null
+        and book_info.available=#{available}
+        group by books.bcode
+        limit #{currPage}, #{pageSize};
+        select FOUND_ROWS() as total;
+    </select>
+    <!--  根据bcode分页查询书籍信息及信息总条数  -->
+    <select id="selectBooksByBcode" resultMap="books, total">
+        select SQL_CALC_FOUND_ROWS
+        book_info.bcode,
+        book_info.bookname,
+        book_info.author,
+        book_info.available,
+        book_info.introduction,
+        count(books.bid) - count(records.bid) as rest,
+        count(books.bid) as total
+        from book_info left join books
+        on book_info.bcode=books.bcode
+        left join records on books.bid=records.bid
+        where records.return_time is null
+        and book_info.bcode=#{bcode}
+        group by books.bcode
+        limit #{currPage}, #{pageSize};
+        select FOUND_ROWS() as total;
+    </select>
+    <!--  根据书名列表分页查询书籍信息及信息总条数  -->
+    <select id="selectBooksByPic" resultMap="books, total">
+        select SQL_CALC_FOUND_ROWS
+        book_info.bcode,
+        book_info.bookname,
+        book_info.author,
+        book_info.available,
+        book_info.introduction,
+        count(books.bid) - count(records.bid) as rest,
+        count(books.bid) as total
+        from book_info left join books
+        on book_info.bcode=books.bcode
+        left join records on books.bid=records.bid
+        where records.return_time is null
+        and book_info.bookname in
+        <foreach collection="books" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+        group by books.bcode
+        limit #{currPage}, #{pageSize};
+        select FOUND_ROWS() as total;
+    </select>
+
+</mapper>

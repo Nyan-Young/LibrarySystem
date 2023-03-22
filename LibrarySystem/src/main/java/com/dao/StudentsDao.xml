@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.StudentsDao">
+    <!--  根据sid和name查询sid——即验证指定信息是否存在  -->
+    <select id="selectStudent" resultType="java.lang.Integer">
+        select sid from students where sid=#{sid} and name=#{name};
+    </select>
+</mapper>

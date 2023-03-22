@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.RecordsDao">
+    <!--  插入一条借阅记录，插入信息为：书籍id、用户id、借出时间（当前时间）、归还期限（一个月后）  -->
+    <insert id="insertRecord">
+        insert into records (bid, uid, borrow_time, deadline) values(#{bid},#{uid},now(),date_add(NOW(), interval 1 MONTH));
+    </insert>
+    <!--  插入一条借阅记录，插入信息为：书籍id、用户id、预约时间（当前时间）  -->
+    <insert id="insertReservation">
+        insert into records (bid, uid, reservation) values((select books.bid from books where books.bcode=#{bcode} and books.bid not in (select distinct r.bid from records r where r.return_time is null) limit 1),#{uid},now());
+    </insert>
+    <resultMap id="records" type="com.domain.Record"></resultMap>
+    <resultMap id="totalR" type="java.lang.Integer"></resultMap>
+    <!--  根据用户id分页查询用户借阅记录及记录总条数  -->
+    <select id="selectHistory" resultMap="records, totalR">
+        select SQL_CALC_FOUND_ROWS book_info.bookname, book_info.author, records.rid, records.reservation, records.borrow_time, records.deadline, records.return_time from records, books, book_info where records.uid=#{uid} and records.bid=books.bid and books.bcode=book_info.bcode limit #{currPage}, #{pageSize};
+        select FOUND_ROWS() as total;
+    </select>
+    <!--  根据借阅记录id延后归还期限，若目前的期限已经是借出时间的三个月后，则无法再延后  -->
+    <update id="updateDeadline">
+        update records set deadline=date_add(deadline, interval 1 MONTH) where rid=#{rid} and TIMESTAMPDIFF(MONTH,borrow_time,deadline) &lt; 3;
+    </update>
+    <!--  根据用户id和书籍id更新已预约的借阅记录，写入借出时间（当前时间）  -->
+    <update id="updateReservation">
+        update records set borrow_time=now() where uid=#{uid} and bid=#{bid} and borrow_time=null;
+    </update>
+    <!--  根据用户id和书籍id更新借阅记录，写入归还时间（当前时间）  -->
+    <update id="updateReturn">
+        update records set return_time=now() where uid=#{uid} and bid=#{bid} and return_time=null;
+    </update>
+</mapper>

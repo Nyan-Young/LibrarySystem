@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:websocket="http://www.springframework.org/schema/websocket"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket.xsd">
+    <context:component-scan base-package="com.controller"/>
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+        <property name="prefix" value="/WEB-INF/static0/"/>
+        <property name="suffix" value=".html"/>
+    </bean>
+    <!--配置图片文件解析器，及一些参数-->
+    <bean id="multipartResolver"  class="org.springframework.web.multipart.commons.CommonsMultipartResolver" >
+        <property name="defaultEncoding" value="utf-8"/>
+        <!--最大内存大小-->
+        <property name="maxUploadSize" value="104857600"/>
+        <!--最小内存大小-->
+        <property name="maxInMemorySize" value="40960"/>
+    </bean>
+    <mvc:default-servlet-handler/>
+    <mvc:annotation-driven/>
+</beans>

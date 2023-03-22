@@ -1,0 +1,259 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta charset="utf-8">
+<!--字体图标-->
+<link href="/javaex/pc/css/icomoon.css" rel="stylesheet" />
+<!--动画-->
+<link href="/javaex/pc/css/animate.css" rel="stylesheet" />
+<!--骨架样式-->
+<link href="/javaex/pc/css/common.css" rel="stylesheet" />
+<!--皮肤（缇娜）-->
+<link href="/javaex/pc/css/skin/tina.css" rel="stylesheet" />
+<!--jquery，不可修改版本-->
+<script src="/javaex/pc/lib/jquery-1.7.2.min.js"></script>
+<!--全局动态修改-->
+<script src="/javaex/pc/js/common.js"></script>
+<!--核心组件-->
+<script src="/javaex/pc/js/javaex.min.js"></script>
+<!--表单验证-->
+<script src="/javaex/pc/js/javaex-formVerify.js"></script>
+<style type="text/css">
+	select{
+		border: none;
+		outline: none;
+		margin-bottom: 30px;
+		margin-right: 0;
+		position: relative;
+		width: 70px;
+		color: #999999;
+		font-size: 20px;
+	}
+</style>
+<title>后台管理</title>
+</head>
+
+<body>
+    <!--主体内容-->
+<div class="list-content">
+	<!--块元素-->
+	<div class="block">
+		<!--页面有多个表格时，可以用于标识表格-->
+		<h2>书籍列表</h2>
+		<!--右上角的返回按钮-->
+		<a href="javascript:history.back();">
+			<button class="button indigo radius-3" style="position: absolute;right: 20px;top: 16px;"><span class="icon-arrow_back"></span> 返回</button>
+		</a>
+		
+		<!--正文内容-->
+		<div class="main">
+			<!--表格上方的搜索操作-->
+			<div class="admin-search">
+				<div class="input-group" id="imgdiv">
+					<select id="type" class="select-option" onclick="uploadIMG()">
+						<option value="bookname" class="select-option">书名</option>
+						<option value="author" class="select-option">作者</option>
+						<option value="pic" class="select-option">图片</option>
+					</select>
+					<input type="file" id="btn_file" accept="image/*" style="display:none">
+					<input id="keyword" type="text" class="text" />
+					<button id="searchBtn" class="button blue" onclick="search();">搜索</button>
+				</div>
+			</div>
+			
+			<!--表格上方的操作元素，添加、删除等-->
+			<!--
+			<div class="operation-wrap">
+				<div class="buttons-wrap">
+					<button class="button blue radius-3"><span class="icon-plus"></span> 添加</button>
+					<button class="button red radius-3"><span class="icon-close2"></span> 删除</button>
+				</div>
+			</div>
+			-->
+			<table id="table" class="table color2">
+				<thead>
+					<tr align="center">
+						<th>序号</th>
+						<th>图片</th>
+						<th>书名</th>
+						<th>作者</th>
+						<th>简介</th>
+						<th>库存<br/>余量</th>
+						<th>预约</th>
+					</tr>
+				</thead>
+				<tbody id="tbody">
+					<!--<tr>-->
+						<!--<td class="checkbox"><input type="checkbox" class="fill listen-1-2" /> </td>-->
+						<!--<td>1</td>-->
+						<!--<td><button class="button blue">编辑</button><button class="button red">删除</button></td>-->
+					<!--</tr>-->
+				</tbody>
+            </table>
+            
+            <div class="page">
+                <ul id="page" class="pagination"></ul>
+            </div>
+		</div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    // 页面一加载, 展示数据列表, 每页10条
+    $(document).ready(function(){
+        // 默认查询所有
+		rander(1);
+    });
+
+    // 渲染数据表格
+	function rander(currPage,keyword='on',pageSize=10,type='available') {
+        // 定义全局 分页属性
+        $.ajax({
+            //请求方式
+            type : "POST",
+            //请求的媒体类型
+            contentType: "application/json;charset=UTF-8",
+            //请求地址
+            url : "/search",
+            //数据，json字符串
+            data : JSON.stringify({"currPage":currPage,"pageSize": pageSize,"type":type,"content": keyword}),
+            //请求成功
+            success : function(result) {
+                // 获取集合属性
+                var total = result[1];
+                var r = result[0]
+                var text = "";
+                $.each(r,function(index,value){
+                   var num = pageSize * (currPage - 1) + index + 1;
+                    text+= "<tr align='center'>" +
+							"<td style='width: 60px'>"+num+"</td>" +
+							"<td style='width: 110px'><img src='/books/"+value.bookname+".jpg' width='100px'></td>" +
+							"<td style='word-break: normal;width: 100px'>"+value.bookname+"</td>" +
+							"<td style='word-break: normal;width: 90px'>"+value.author+"</td>" +
+							"<td style='word-break: normal;width: 230px'>"+value.introduction+"</td>" +
+							"<td style='width: 70px'>"+value.rest+"</td>" +
+							"<td style='width: 80px; overflow: hidden'><button class='button blue empty' onclick='reservation("+value.bcode+")'>预约</button></td></tr>"
+                });
+
+                $("#tbody").html(text);
+
+                // 向上取整去总页数
+                var totalPage = Math.ceil(total/pageSize);
+                // 清空分页组件
+                $("#page").empty();
+                // 调用分页组件
+                javaex.page({
+                    id : "page",
+                    pageCount : totalPage,	// 总页数
+                    currentPage : currPage,// 默认选中第几页
+                    perPageCount : pageSize ,	// 每页显示多少条，不填时，不显示该条数选择控件
+                    isShowJumpPage : false,	// 是否显示跳页
+                    totalNum : total,		// 总条数，不填时，不显示
+                    position : "center",
+                    callback : function(rtn) {
+                        // 翻页
+                        rander(rtn.pageNum,keyword,rtn.perPageCount);
+                    }
+                });
+            },
+            //请求失败，包含具体的错误信息
+            error : function(e){
+                console.log(e.status);
+                console.log(e.responseText);
+            }
+        });
+    }
+
+    // 搜索
+    function search() {
+        // 获取搜索关键字
+        var keyword = $("#keyword").val();
+        var type = $("#type").val();
+        // 搜索结果渲染表格
+        rander(1,keyword,10,type);
+    }
+
+    // 预约
+    function reservation(bcode) {
+		$.post("/reservation",{"uid":localStorage.getItem('uid'),"bcode": bcode},function(result) {
+			var index = result.indexOf("成功");
+			if (index<0) {
+				type = "error"
+			}else {
+				type = "success"
+			}
+			javaex.optTip({
+				content : result,
+				type : type
+			});
+		});
+    }
+
+	function uploadIMG() {
+		if($("#type").val() === "pic"){
+			document.getElementById("btn_file").click();
+		}
+	}
+	$("#btn_file").change(function () {
+		var formData =new FormData();   //新建表单元素
+		formData.append("file", $("#btn_file")[0].files[0]);   //添加上传文件变量，获得文件真实信息，解决虚拟路径
+		$.ajax({
+			type: 'POST',
+			url: "/searchPic",
+			data: formData,
+			processData: false, // 告诉jQuery不要去处理发送的数据
+			contentType: false, // 告诉jQuery不要去设置Content-Type请求头
+			async: false,
+			success: function (result) {
+				alert("上传成功！");
+				$("#btn_file").val(''); //清空文件输入框里的数据，解决选择相同文件名文件change不起作用
+				var total = result[1];
+				var r = result[0]
+				var pageSize = 10;
+				var currPage = 1;
+				var text = "";
+				$.each(r,function(index,value){
+					var num = pageSize * (currPage - 1) + index + 1;
+					text+= "<tr align='center'>" +
+							"<td style='width: 60px'>"+num+"</td>" +
+							"<td style='width: 110px'><img src='/books/"+value.bookname+".jpg' width='100px'></td>" +
+							"<td style='word-break: normal;width: 100px'>"+value.bookname+"</td>" +
+							"<td style='word-break: normal;width: 90px'>"+value.author+"</td>" +
+							"<td style='word-break: normal;width: 230px'>"+value.introduction+"</td>" +
+							"<td style='width: 70px'>"+value.rest+"</td>" +
+							"<td style='width: 80px; overflow: hidden'><button class='button blue empty' onclick='reservation("+value.bcode+")'>预约</button></td></tr>"
+				});
+
+				$("#tbody").html(text);
+
+				// 向上取整去总页数
+				var totalPage = Math.ceil(total/pageSize);
+				// 清空分页组件
+				$("#page").empty();
+				// 调用分页组件
+				javaex.page({
+					id : "page",
+					pageCount : totalPage,	// 总页数
+					currentPage : currPage,// 默认选中第几页
+					perPageCount : pageSize ,	// 每页显示多少条，不填时，不显示该条数选择控件
+					isShowJumpPage : false,	// 是否显示跳页
+					totalNum : total,		// 总条数，不填时，不显示
+					position : "center",
+					callback : function(rtn) {
+						// 翻页
+						rander(rtn.pageNum,keyword,rtn.perPageCount);
+					}
+				});
+			},
+			//请求失败，包含具体的错误信息
+			error : function(e){
+				console.log(e.status);
+				console.log(e.responseText);
+			}
+		})
+	})
+
+</script>
+</body>
+</html>
