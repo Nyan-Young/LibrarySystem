@@ -2,9 +2,10 @@
 #### 本项目为一个图书馆管理系统。
 
 ## 一、项目技术栈
-#### 前端技术：HTML、CSS、JavaScript、Ajax
-#### 后端技术：Java、SpringMVC、MyBatis、Java ImageIO图片读写技术、MultipartFile文件上传技术、分页查询技术
+#### 前端技术：HTML、CSS、JavaScript、Ajax、LocalStorage
+#### 后端技术：Java、SpringMVC、MyBatis、Java ImageIO图片读写技术、MultipartFile文件上传技术、分页查询技术、Python爬虫技术、Tomcat
 #### 数据库：MySQL
+#### 项目工具：IntelliJ IDEA、Maven、PyCharm（爬虫运行工具）
 
 ## 二、遇到的问题和解决办法
 #### 1、书籍信息SQL查询语句为什么出现了数据库报错“In aggregated query without GROUP BY, expression #1 of SELECT list contains nonaggregated column 'libsys.book_info.bcode'; this is incompatible with sql_mode=only_full_group_by”？
